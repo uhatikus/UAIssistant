@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "uaissistant"
+version = "0.1.0"
+description = ""
+authors = ["Ukhatov Alexander <alexander.ukhatov@gmail.com>"]
+license = "LICENSE"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "~3.10"
+environs = "^11.0.0"
+injector = "^0.21.0"
+sqlalchemy = "^2.0.29"
+pydantic = "^2.6.4"
+fastapi-injector = "^0.5.4"
+openai = "^1.14.3"
+anthropic = "^0.21.3"
+uvicorn = "^0.29.0"
+pytest = "^8.1.1"
+pandas = "^2.2.1"
+plotly = "^5.20.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+# [tool.ruff.lint]
+# select = ["ALL"]
+
+[tool.ruff]
+line-length = 80

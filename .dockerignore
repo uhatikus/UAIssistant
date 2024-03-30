@@ -1,0 +1,16 @@
+.venv
+__pycache__
+.git
+.gitignore
+.dockerignore
+Dockerfile
+README.md
+*.pyc
+*.pyo
+*.pyd
+.Python
+db.sqlite3
+db.sqlite3-journal
+.vscode
+.idea
+*.swp
