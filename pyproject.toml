@@ -19,6 +19,7 @@ uvicorn = "^0.29.0"
 pytest = "^8.1.1"
 pandas = "^2.2.1"
 plotly = "^5.20.0"
+psycopg2 = "^2.9.9"
 
 
 [build-system]

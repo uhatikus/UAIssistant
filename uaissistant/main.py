@@ -15,6 +15,7 @@ from fastapi_injector import (
     attach_injector,
 )
 from uaissistant.routes import assistant
+from fastapi.middleware.cors import CORSMiddleware
 
 injector = Injector(
     [
@@ -30,6 +31,13 @@ injector = Injector(
 )
 app = FastAPI(root_path="/api")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.add_middleware(InjectorMiddleware, injector=injector)
 app.include_router(assistant.router)
 attach_injector(app, injector, options=RequestScopeOptions(enable_cleanup=True))

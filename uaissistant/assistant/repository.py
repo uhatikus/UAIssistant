@@ -81,7 +81,7 @@ class AssistantRepository:
 
     # READ
     async def get_assistant(self, assistant_id: str) -> AssistantEntity | None:
-        query = "SELECT id, name, created_at, instructions, model, llmsource FROM assistant WHERE assistant_id = :assistant_id"
+        query = "SELECT id, name, created_at, instructions, model, llmsource FROM assistant WHERE id = :assistant_id"
         parameters = {"assistant_id": assistant_id}
 
         row = self.session.execute(text(query), parameters).fetchone()
@@ -139,7 +139,7 @@ class AssistantRepository:
             "created_at": assistant.created_at,
             "instructions": assistant.instructions,
             "model": assistant.model,
-            "llmsource": assistant.llmsource,
+            "llmsource": assistant.llmsource.value,
         }
 
         row = self.session.execute(text(query), parameters).fetchone()
@@ -173,6 +173,7 @@ class AssistantRepository:
         thread_id: str,
         messages: List[AssistantMessageItem],
     ) -> List[AssistantMessageEntity]:
+        print(messages)
         query = """
             INSERT INTO assistant_message (id, assistant_id, thread_id, created_at, role, type, content)
             VALUES (:id, :assistant_id, :thread_id, :created_at, :role, :type, :content)
@@ -205,7 +206,7 @@ class AssistantRepository:
             DELETE FROM assistant_message WHERE assistant_id = :assistant_id
         """
         parameters = {
-            "thread_id": assistant_id,
+            "assistant_id": assistant_id,
         }
         self.session.execute(text(query), parameters)
 

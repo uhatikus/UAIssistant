@@ -53,12 +53,18 @@ class CreateAssistantParams:
 
 
 @dataclass
+class CreateAssistantResult:
+    assistant: AssistantEntity
+
+
+@dataclass
 class CreateThreadParams:
     message: str
 
 
 @dataclass
-class CreateThreadResult(AssistantThreadEntity):
+class CreateThreadResult:
+    thread: AssistantThreadEntity
     messages: List[AssistantMessageItem]
 
 
@@ -73,6 +79,17 @@ class SendMessageResult:
     messages: List[AssistantMessageItem]
 
 
+# For DELETE requests
+@dataclass
+class DeleteAssistantResult:
+    assistant: AssistantEntity
+
+
+@dataclass
+class DeleteThreadResult:
+    thread: AssistantThreadEntity
+
+
 # For PATCH requests
 @dataclass
 class UpdateAssistantParams:
@@ -82,5 +99,15 @@ class UpdateAssistantParams:
 
 
 @dataclass
+class UpdateAssistantResult:
+    assistant: AssistantEntity
+
+
+@dataclass
 class UpdateThreadParams:
     name: str
+
+
+@dataclass
+class UpdateThreadResult:
+    thread: AssistantThreadEntity

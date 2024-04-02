@@ -18,7 +18,7 @@ class get_something_useful(ToolFunction):
         # - you can use tfr: ToolFactoryRepository to access the Databases (Postgres and ClickHouse)
         # - use `some_arg_from_openai_assistant` as `self.some_arg_from_openai_assistant`
 
-        # Conclude the output for OpenAI Assistantant and the Glassdome frontent:
+        # Conclude the output for OpenAI Assistantant and the frontent:
         output = f"Here is the result of something useful: ..."
         frontend_values = [AssistantMessageValue(type=AssistantMessageType.Text, content={"message": f"Here is our useful result{}"})]
 

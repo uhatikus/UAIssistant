@@ -3,6 +3,14 @@ FROM python:3.10-slim as python-base
 # Set work directory
 WORKDIR /uaissistant
 
+# Install system dependencies required for psycopg2 compilation
+RUN apt-get update && apt-get install -y \
+  libpq-dev \
+  gcc \
+  # Add any other dependencies your project may need
+  && rm -rf /var/lib/apt/lists/*
+
+
 # Install Poetry
 RUN pip3 install poetry && \
   poetry config virtualenvs.create false
@@ -14,10 +22,12 @@ COPY pyproject.toml poetry.lock* /uaissistant/
 RUN poetry install --no-root
 
 # Copy the rest of the application
-COPY . .
+COPY ./uaissistant /uaissistant/uaissistant
+
+COPY .env .env
 
 # Create a non-root user
 RUN useradd --create-home appuser
 USER appuser
 
-CMD ["python", "-m", "uvicorn", "assistant.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["python", "-m", "uvicorn", "uaissistant.main:app", "--host", "0.0.0.0", "--port", "8000"]

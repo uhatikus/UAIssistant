@@ -13,10 +13,9 @@ class DbConfig:
     user: str
     password: str
     database: str
-    sslmode: str
 
     def connection_string(self) -> str:
-        return f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}?sslmode={self.sslmode}"
+        return f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
 
 
 class DbModule(Module):
@@ -28,7 +27,6 @@ class DbModule(Module):
             user=env.str("DB_USER"),
             password=env.str("DB_PASSWORD"),
             database=env.str("DB_DATABASE"),
-            sslmode=env.str("DB_SSLMODE", default="require"),
         )
 
     @provider

@@ -1,4 +1,5 @@
 from typing import Dict
+from uaissistant.assistant.schemas import LLMSource
 from uaissistant.llms.anthropic.repository import IAnthropicRepository
 from uaissistant.llms.llm import LLM
 from uaissistant.llms.openai.openaillm import OpenAILLM
@@ -20,10 +21,10 @@ class LlmsModule(Module):
         anthropic_repository: IAnthropicRepository,
     ) -> Dict[str, LLM]:
         return {
-            "openai": OpenAILLM(
+            LLMSource.OpenAI: OpenAILLM(
                 client=openai_client, tool_factory=tool_factory
             ),
-            "anthropic": AnthropicLLM(
+            LLMSource.Anthropic: AnthropicLLM(
                 client=anthropic_client,
                 tool_factory=tool_factory,
                 anthropic_repository=anthropic_repository,

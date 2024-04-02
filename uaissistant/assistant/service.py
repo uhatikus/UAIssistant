@@ -4,21 +4,27 @@ from uaissistant.assistant.models import (
     AssistantMessageItem,
     AssistantMessageValue,
     CreateAssistantParams,
+    CreateAssistantResult,
     CreateThreadParams,
     CreateThreadResult,
+    DeleteAssistantResult,
+    DeleteThreadResult,
     ListAssistantsResult,
     ListMessageResult,
     ListThreadsResult,
     SendMessageParams,
     SendMessageResult,
     UpdateAssistantParams,
+    UpdateAssistantResult,
     UpdateThreadParams,
+    UpdateThreadResult,
 )
 from uaissistant.assistant.repository import IAssistantRepository
 from uaissistant.assistant.schemas import (
     AssistantEntity,
     AssistantMessageEntity,
     AssistantThreadEntity,
+    LLMSource,
 )
 from uaissistant.llms import LLM
 
@@ -35,7 +41,7 @@ class IAssistantService(Protocol):
 
     async def create_assistant(
         self, params: CreateAssistantParams
-    ) -> AssistantEntity:
+    ) -> CreateAssistantResult:
         pass
 
     async def create_thread(
@@ -51,22 +57,24 @@ class IAssistantService(Protocol):
     ) -> SendMessageResult:
         pass
 
-    async def delete_assistant(self, assistant_id: str) -> AssistantEntity:
+    async def delete_assistant(
+        self, assistant_id: str
+    ) -> DeleteAssistantResult:
         pass
 
     async def delete_thread(
         self, assistant_id: str, thread_id: str
-    ) -> AssistantThreadEntity:
+    ) -> DeleteThreadResult:
         pass
 
     async def update_assistant(
         self, assistant_id: str, params: UpdateAssistantParams
-    ) -> AssistantEntity:
+    ) -> UpdateAssistantResult:
         pass
 
     async def update_thread(
         self, thread_id: str, params: UpdateThreadParams
-    ) -> AssistantThreadEntity:
+    ) -> UpdateThreadResult:
         pass
 
 
@@ -112,7 +120,7 @@ class AssistantService:
         current_llm = self.llms[params.llmsource]
 
         # create assistant on the LLM side
-        llm_assistant: AssistantEntity = current_llm.create_assistant(
+        llm_assistant: AssistantEntity = await current_llm.create_assistant(
             name=params.name,
             instructions=params.instructions,
             model=params.model,
@@ -123,7 +131,7 @@ class AssistantService:
             llm_assistant
         )
 
-        return assistant
+        return CreateAssistantResult(assistant=assistant)
 
     async def create_thread(
         self, assistant_id: str, params: CreateThreadParams
@@ -137,14 +145,14 @@ class AssistantService:
         )
 
         # extract current LLM
-        current_llm = self.llms[assistant.llmsource]
+        current_llm = self.llms[LLMSource(assistant.llmsource)]
 
         # TODO: remove later. Update tool-functions only when they are updated.
         await current_llm.update_tools(assistant.id)
 
         # create thread on LLM side
         llm_thread: AssistantThreadEntity = await current_llm.create_thread(
-            default_name
+            assistant_id=assistant.id, default_name=default_name
         )
 
         # send message and get the result from LLM
@@ -173,10 +181,7 @@ class AssistantService:
 
         return (
             CreateThreadResult(
-                id=thread_entity.id,
-                name=thread_entity.name,
-                created_at=thread_entity.created_at,
-                assistant_id=thread_entity.assistant_id,
+                thread=thread_entity,
                 messages=responses,
             )
             if thread_entity is not None
@@ -195,7 +200,7 @@ class AssistantService:
         )
 
         # extract current LLM
-        current_llm = self.llms[assistant.llmsource]
+        current_llm = self.llms[LLMSource(assistant.llmsource)]
 
         # TODO: remove for not updating tool-functions frequently.
         # update LLM tool_functions
@@ -229,7 +234,7 @@ class AssistantService:
         )
 
         # extract current LLM
-        current_llm = self.llms[assistant.llmsource]
+        current_llm = self.llms[LLMSource(assistant.llmsource)]
 
         # delete from LLM
         await current_llm.delete_assistant(assistant_id)
@@ -239,18 +244,19 @@ class AssistantService:
             await self.ar.delete_assistant(assistant_id)
         )
 
-        return deleted_assistant
+        return DeleteAssistantResult(assistant=deleted_assistant)
 
     async def delete_thread(
         self, assistant_id: str, thread_id: str
     ) -> AssistantThreadEntity:
         # get current assistant info
+        print(assistant_id)
         assistant: AssistantEntity | None = await self.ar.get_assistant(
             assistant_id
         )
 
         # extract current LLM
-        current_llm = self.llms[assistant.llmsource]
+        current_llm = self.llms[LLMSource(assistant.llmsource)]
 
         # delete from LLM
         await current_llm.delete_thread(thread_id)
@@ -260,18 +266,19 @@ class AssistantService:
             thread_id
         )
 
-        return deleted_thread
+        return DeleteThreadResult(thread=deleted_thread)
 
     async def update_assistant(
         self, assistant_id: str, params: UpdateAssistantParams
     ) -> AssistantEntity:
+        print(assistant_id)
         # get current assistant info
         assistant: AssistantEntity | None = await self.ar.get_assistant(
             assistant_id
         )
 
         # extract current LLM
-        current_llm = self.llms[assistant.llmsource]
+        current_llm = self.llms[LLMSource(assistant.llmsource)]
 
         # update in LLM
         assistant_entity: AssistantEntity = await current_llm.update_assistant(
@@ -289,7 +296,7 @@ class AssistantService:
             model=params.model,
         )
 
-        return assistant_entity
+        return UpdateAssistantResult(assistant=assistant_entity)
 
     async def update_thread(
         self, thread_id: str, params: UpdateThreadParams
@@ -299,7 +306,7 @@ class AssistantService:
             thread_id, params.name
         )
 
-        return thread_entity
+        return UpdateThreadResult(thread=thread_entity)
 
 
 if TYPE_CHECKING:

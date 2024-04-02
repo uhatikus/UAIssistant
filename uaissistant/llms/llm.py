@@ -26,10 +26,12 @@ class LLM(Protocol):
     async def delete_assistant(self, assistant_id):
         pass
 
-    async def create_thread(self, default_name: str) -> AssistantThreadEntity:
+    async def create_thread(
+        self, assistant_id: str, default_name: str
+    ) -> AssistantThreadEntity:
         pass
 
-    async def delete_thread(self, thread_id):
+    async def delete_thread(self, thread_id: str):
         pass
 
     async def process_user_message(

@@ -87,23 +87,34 @@ class OpenAILLM:
         )
         return assistant
 
-    async def delete_assistant(self, assistant_id):
-        self.client.beta.assistants.delete(assistant_id=assistant_id)
+    async def delete_assistant(self, assistant_id: str):
+        try:
+            self.client.beta.assistants.delete(
+                assistant_id=assistant_id, timeout=self.API_TIMEOUT
+            )
+        except Exception as e:
+            print(e)
         return
 
-    async def create_thread(self, default_name) -> AssistantThreadEntity:
+    async def create_thread(
+        self, assistant_id: str, default_name: str
+    ) -> AssistantThreadEntity:
         openai_thread = self.client.beta.threads.create(
             timeout=self.API_TIMEOUT
         )
         thread = AssistantThreadEntity(
             id=openai_thread.id,
             name=default_name,
+            assistant_id=assistant_id,
             created_at=datetime.fromtimestamp(openai_thread.created_at),
         )
         return thread
 
     async def delete_thread(self, thread_id):
-        self.client.beta.threads.delete(thread_id, timeout=self.API_TIMEOUT)
+        try:
+            self.client.beta.threads.delete(thread_id, timeout=self.API_TIMEOUT)
+        except Exception as e:
+            print(e)
         return
 
     async def process_user_message(
@@ -134,7 +145,8 @@ class OpenAILLM:
                     ),
                 )
             ]
-        return user_message, responses
+        user_message_and_responses = [user_message] + responses
+        return user_message_and_responses
 
     async def update_tools(self, assistant_id):
         # update OpenAI Client. TODO: add a check for success
@@ -157,7 +169,7 @@ class OpenAILLM:
             self.openai_tools.append(tool_function_defenition)
 
     async def _send_message(
-        self, thread_id: str, message: str, glassdome_link: str
+        self, thread_id: str, message: str
     ) -> AssistantMessageItem:
         runs = self.client.beta.threads.runs.list(
             thread_id, timeout=self.API_TIMEOUT
@@ -184,7 +196,7 @@ class OpenAILLM:
         thread_message = self.client.beta.threads.messages.create(
             thread_id,
             role="user",
-            content=f"{message} \t Opened link: {glassdome_link}",
+            content=message,
             timeout=self.API_TIMEOUT,
         )
         print("[_send_message] Sent a message")
@@ -233,11 +245,8 @@ class OpenAILLM:
 
     async def _get_response(
         self,
-        company_id: str,
-        account_id: str,
         assistant_id: str,
         thread_id: str,
-        glassdome_link: str,
     ) -> List[AssistantMessageItem] | None:
         # creating a run
         run = self.client.beta.threads.runs.create(
@@ -291,9 +300,6 @@ class OpenAILLM:
                     args = json.loads(tool_call.function.arguments)
                 except Exception as e:
                     print(f"function argument parsing error: {e}, args: {args}")
-                args["company_id"] = company_id  # add company_id
-                args["account_id"] = account_id  # add account_id
-                args["glassdome_link"] = glassdome_link  # add glassdome_link
 
                 # call tool_function
                 (

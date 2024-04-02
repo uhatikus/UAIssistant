@@ -19,6 +19,7 @@ async def list_assistants(
     ass: IAssistantService = Injected(IAssistantService),
 ):
     result = await ass.list_assistants()
+    print(result)
     return result
 
 
@@ -46,10 +47,10 @@ async def create_assistant(
     params: CreateAssistantParams,
     ass: IAssistantService = Injected(IAssistantService),
 ):
-    assistant = await ass.create_assistant(params)
-    if assistant.id is None:
+    result = await ass.create_assistant(params)
+    if result.assistant.id is None:
         raise HTTPException(status_code=500, detail="Assistant creation failed")
-    return assistant
+    return result
 
 
 @router.post("/{assistant_id}/threads")
@@ -58,13 +59,13 @@ async def create_thread(
     params: CreateThreadParams,
     ass: IAssistantService = Injected(IAssistantService),
 ):
-    thread = await ass.create_thread(assistant_id, params)
-    if thread.id is None:
+    result = await ass.create_thread(assistant_id, params)
+    if result.thread.id is None:
         raise HTTPException(status_code=500, detail="Thread creation failed")
-    return thread
+    return result
 
 
-@router.post("/{assistant_id}/threads/{thread_id}/message")
+@router.post("/{assistant_id}/threads/{thread_id}/messages")
 async def send_message(
     assistant_id: str,
     thread_id: str,
@@ -86,10 +87,13 @@ async def delete_assistant(
 
 @router.delete("/{assistant_id}/threads/{thread_id}")
 async def delete_thread(
+    assistant_id: str,
     thread_id: str,
     ass: IAssistantService = Injected(IAssistantService),
 ):
-    return await ass.delete_thread(thread_id)
+    return await ass.delete_thread(
+        assistant_id=assistant_id, thread_id=thread_id
+    )
 
 
 # PATCH requests
