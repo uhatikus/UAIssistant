@@ -1,31 +1,38 @@
 version: "3.8"
 
 services:
-  db:
-    image: postgres
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    ports:
-      - "${DB_PORT}:${DB_PORT}"
-    environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_DB: ${DB_DATABASE}
-
   app:
     build: .
+    command: uvicorn uaissistant.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000" # Adjust the ports as needed
     depends_on:
       - db
     environment:
       # Environment variables for your FastAPI application
-      DATABASE_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}"
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
     volumes:
       - .:/code # Assuming your application code is in the current directory
 
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_HOST: ${DB_HOST}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_DATABASE}
+
 volumes:
-  db-data:
+  postgres_data:
     # This volume will persist your database data

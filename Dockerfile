@@ -24,10 +24,6 @@ RUN poetry install --no-root
 # Copy the rest of the application
 COPY ./uaissistant /uaissistant/uaissistant
 
-COPY .env .env
-
 # Create a non-root user
 RUN useradd --create-home appuser
 USER appuser
-
-CMD ["python", "-m", "uvicorn", "uaissistant.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -3,7 +3,7 @@
 ## Set DB in docker container:
 
 ```
-make onboarding
+make db
 make install
 
 

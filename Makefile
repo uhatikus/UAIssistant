@@ -5,7 +5,7 @@ export
 # Define targets and their recipes
 .PHONY: onboarding clean install update run
 
-onboarding:
+db:
 	# Pull the postgres Docker image
 	docker pull postgres
 	# Create a Docker volume for storing PostgreSQL data
