@@ -13,9 +13,9 @@ db:
 	# Run a PostgreSQL container
 	docker run --name $(CONTAINER_NAME) -e POSTGRES_PASSWORD=$(DB_PASSWORD) -d -p $(DB_PORT):$(DB_PORT) -v $(VOLUME_NAME):/var/lib/postgresql/data postgres
 	# Copy the SQL script into the PostgreSQL container
-	docker cp $(SQL_SCRIPT) $(CONTAINER_NAME):/database.sql
+	docker cp $(SQL_SCRIPT) $(CONTAINER_NAME):/init.sql
 	# Execute commands in the PostgreSQL container
-	docker exec -it $(CONTAINER_NAME) bash -c "psql -U postgres -d postgres -f /database.sql"
+	docker exec -it $(CONTAINER_NAME) bash -c "psql -U postgres -d postgres -f /init.sql"
 
 clean:
 	# Cleanup

@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 from uaissistant.assistant.models import AssistantMessageValue
 from uaissistant.tool_factory.repository import IToolFactoryRepository
-from uaissistant.tool_factory.tools.schema import ToolFunction
+from uaissistant.tool_factory.schemas.tool_function import ToolFunction
 
 
 class get_current_time(ToolFunction):

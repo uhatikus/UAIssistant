@@ -18,7 +18,7 @@ from uaissistant.assistant.schemas import (
 from uaissistant.llms.llm import LLM
 from uaissistant.tool_factory import tools
 from uaissistant.tool_factory.service import IToolFactoryService
-from uaissistant.tool_factory.tools.schema import ToolFunction
+from uaissistant.tool_factory.schemas.tool_function import ToolFunction
 from openai import Client
 from openai.types.beta.threads import Run
 
