@@ -19,7 +19,6 @@ async def list_assistants(
     ass: IAssistantService = Injected(IAssistantService),
 ):
     result = await ass.list_assistants()
-    print(result)
     return result
 
 

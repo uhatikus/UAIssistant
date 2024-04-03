@@ -173,7 +173,6 @@ class AssistantRepository:
         thread_id: str,
         messages: List[AssistantMessageItem],
     ) -> List[AssistantMessageEntity]:
-        print(messages)
         query = """
             INSERT INTO assistant_message (id, assistant_id, thread_id, created_at, role, type, content)
             VALUES (:id, :assistant_id, :thread_id, :created_at, :role, :type, :content)

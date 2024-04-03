@@ -29,15 +29,6 @@ class ToolFactoryService:
     ) -> Tuple[str, List[AssistantMessageItem]]:
         output = ""
         frontend_values = []
-        # TODO: remove
-        # function_object = getattr(tools, function_name)
-        # function_object_initialized = function_object(**args)
-        # # Check if the object is callable (a function/method)
-        # if callable(function_object):
-        #     output, frontend_values = function_object_initialized(tfr=self.tfr, args=args)
-        # else:
-        #     output = f"[Not callable] The function '{function_name}' does not exist in the module."
-        #     print(output)
         try:
             function_object = getattr(tools, function_name)
             function_object_initialized = function_object(**args)

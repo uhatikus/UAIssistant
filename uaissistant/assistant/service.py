@@ -250,7 +250,6 @@ class AssistantService:
         self, assistant_id: str, thread_id: str
     ) -> AssistantThreadEntity:
         # get current assistant info
-        print(assistant_id)
         assistant: AssistantEntity | None = await self.ar.get_assistant(
             assistant_id
         )
@@ -271,7 +270,6 @@ class AssistantService:
     async def update_assistant(
         self, assistant_id: str, params: UpdateAssistantParams
     ) -> AssistantEntity:
-        print(assistant_id)
         # get current assistant info
         assistant: AssistantEntity | None = await self.ar.get_assistant(
             assistant_id

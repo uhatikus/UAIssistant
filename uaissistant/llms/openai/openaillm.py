@@ -294,7 +294,6 @@ class OpenAILLM:
                     f"\n\n[_get_response] executing function {tool_call.function.name}, with args: {tool_call.function.arguments}\n\n"
                 )
 
-                # create args for the current tool_call. TODO: improve the logic here
                 args = {}
                 try:
                     args = json.loads(tool_call.function.arguments)
@@ -309,7 +308,6 @@ class OpenAILLM:
                     function_name=tool_call.function.name, args=args
                 )
 
-                # print(f"\n\n[_get_response], {output}, {new_frontend_contents}\n\n")
                 # save the resulted ouputs
                 tool_outputs.append(
                     {"tool_call_id": tool_call.id, "output": output}
