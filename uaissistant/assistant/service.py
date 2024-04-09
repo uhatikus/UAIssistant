@@ -159,7 +159,7 @@ class AssistantService:
         user_message_and_responses: List[
             AssistantMessageItem
         ] = await current_llm.process_user_message(
-            assistant_id=assistant.id,
+            assistant=assistant,
             thread_id=llm_thread.id,
             message=params.message,
         )
@@ -210,7 +210,7 @@ class AssistantService:
         user_message_and_responses: List[
             AssistantMessageItem
         ] = await current_llm.process_user_message(
-            assistant_id=assistant.id,
+            assistant=assistant,
             thread_id=thread_id,
             message=params.message,
         )

@@ -38,11 +38,11 @@ class ToolFactoryService:
                     tfr=self.tfr, args=args
                 )
             else:
-                output = f"[Not callable] The function '{function_name}' does not exist in the module."
-                print(output)
+                output = f"The function '{function_name}' does not exist in the module."
+                print(f"[{self.__class__.__name__}] {output}")
         except Exception as e:
-            output = f"[{function_name}] Error running the function {function_name}. Error {e}"
-            print(output)
+            output = f"Error running the function {function_name}. Error {e}"
+            print(f"[{self.__class__.__name__}] {output}")
 
         frontend_contents = [
             AssistantMessageItem(

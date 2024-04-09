@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Tuple
 
 from uaissistant.assistant.models import AssistantMessageValue
@@ -14,7 +14,9 @@ class get_current_time(ToolFunction):
     ) -> Tuple[str, List[AssistantMessageValue]]:
         print(f"[{self.__class__.__name__}] ")
 
-        current_time_str = datetime.now().strftime("%d %b %Y, %H:%M:%S")
+        current_time_str = datetime.now(timezone.utc).strftime(
+            "%d %b %Y, %H:%M:%S"
+        )
 
         output = f"The current time is {current_time_str}"
         frontend_values = []

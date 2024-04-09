@@ -2,7 +2,7 @@ import json
 import time
 import uuid
 from datetime import datetime
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING, List
 
 from uaissistant.assistant.models import (
     AssistantMessageItem,
@@ -68,7 +68,7 @@ class OpenAILLM:
         instructions,
         model,
     ) -> AssistantEntity:
-        # self._self_update_tools()
+        self._self_update_tools()
 
         openai_assistant = self.client.beta.assistants.update(
             assistant_id=assistant_id,
@@ -93,7 +93,7 @@ class OpenAILLM:
                 assistant_id=assistant_id, timeout=self.API_TIMEOUT
             )
         except Exception as e:
-            print(e)
+            print(f"[{self.__class__.__name__}: delete_assistant]: {e}")
         return
 
     async def create_thread(
@@ -110,24 +110,24 @@ class OpenAILLM:
         )
         return thread
 
-    async def delete_thread(self, thread_id):
+    async def delete_thread(self, thread_id: str):
         try:
             self.client.beta.threads.delete(thread_id, timeout=self.API_TIMEOUT)
         except Exception as e:
-            print(e)
+            print(f"[{self.__class__.__name__}: delete_thread]: {e}")
         return
 
     async def process_user_message(
         self,
-        assistant_id: str,
+        assistant: AssistantEntity,
         thread_id: str,
         message: str,
-    ) -> Tuple[AssistantMessageItem, List[AssistantMessageItem]]:
+    ) -> List[AssistantMessageItem]:
         user_message: AssistantMessageItem = await self._send_message(
             thread_id, message
         )
         responses: List[AssistantMessageItem] | None = await self._get_response(
-            assistant_id=assistant_id,
+            assistant_id=assistant.id,
             thread_id=thread_id,
         )
         # if there is something wrong with the thread. TODO !!!IMPORTANT!!!: remove thread from assistants
@@ -145,10 +145,12 @@ class OpenAILLM:
                     ),
                 )
             ]
+
         user_message_and_responses = [user_message] + responses
         return user_message_and_responses
 
-    async def update_tools(self, assistant_id):
+    async def update_tools(self, assistant_id: str):
+        self._self_update_tools()
         # update OpenAI Client. TODO: add a check for success
         self.client.beta.assistants.update(
             assistant_id,
@@ -178,7 +180,7 @@ class OpenAILLM:
             run = runs.data[0]
             if run.status not in self.RUN["TERMINAL_STATES"]:
                 print(
-                    f"[_send_message] Existing run: {run.id}, status: {run.status}"
+                    f"[{self.__class__.__name__} _send_message] Existing run: {run.id}, status: {run.status}"
                 )
                 try:
                     self.client.beta.threads.runs.cancel(
@@ -187,10 +189,12 @@ class OpenAILLM:
                         timeout=self.API_TIMEOUT,
                     )
                 except Exception as e:
-                    print(f"[_send_message] Error cancelling the run: {e}")
+                    print(
+                        f"[{self.__class__.__name__} _send_message] Error cancelling the run: {e}"
+                    )
                 await self._wait_on_run(thread_id, run)
                 print(
-                    f"[_send_message] After wait | Existing run: {run.id}, status: {run.status}"
+                    f"[{self.__class__.__name__} _send_message] After wait | Existing run: {run.id}, status: {run.status}"
                 )
 
         thread_message = self.client.beta.threads.messages.create(
@@ -199,7 +203,7 @@ class OpenAILLM:
             content=message,
             timeout=self.API_TIMEOUT,
         )
-        print("[_send_message] Sent a message")
+        print(f"[{self.__class__.__name__} _send_message] Sent a message")
 
         user_message = AssistantMessageItem(
             id=thread_message.id,
@@ -214,31 +218,35 @@ class OpenAILLM:
 
     async def _wait_on_run(self, thread_id: str, run: Run) -> Run:
         print(
-            f"[_wait_on_run] before id: {run.id} status: {run.status}, error: {run.last_error}"
+            f"[{self.__class__.__name__} _wait_on_run] before id: {run.id} status: {run.status}, error: {run.last_error}"
         )
         itr = 0
         MAX_ITR = 120
         while run.status in self.RUN["PENDING_STATES"] and itr <= MAX_ITR:
             itr += 1
             print(
-                f"[_wait_on_run] waiting for id: {run.id} status: {run.status}, error: {run.last_error}"
+                f"[{self.__class__.__name__} _wait_on_run] waiting for id: {run.id} status: {run.status}, error: {run.last_error}"
             )
             run = self.client.beta.threads.runs.retrieve(
                 thread_id=thread_id, run_id=run.id, timeout=self.API_TIMEOUT
             )
             time.sleep(0.5)
         print(
-            f"[_wait_on_run] after id: {run.id} status: {run.status}, error: {run.last_error}"
+            f"[{self.__class__.__name__} _wait_on_run] after id: {run.id} status: {run.status}, error: {run.last_error}"
         )
 
         if itr > MAX_ITR:
             try:
-                print(f"[_wait_on_run] Cancelling the run {run.id}, itr: {itr}")
+                print(
+                    f"[{self.__class__.__name__} _wait_on_run] Cancelling the run {run.id}, itr: {itr}"
+                )
                 self.client.beta.threads.runs.cancel(
                     thread_id=thread_id, run_id=run.id, timeout=self.API_TIMEOUT
                 )
             except Exception as e:
-                print(f"[_wait_on_run] Error cancelling the run: {e}")
+                print(
+                    f"[{self.__class__.__name__} _wait_on_run] Error cancelling the run: {e}"
+                )
                 run.status = "cancelled"
 
         return run
@@ -267,14 +275,18 @@ class OpenAILLM:
             run := await self._wait_on_run(thread_id, run)
         ).status not in self.RUN["TERMINAL_STATES"] and itr <= MAX_ITR:
             itr += 1
-            print(f"[_get_response] run.status: {run.status}")
+            print(
+                f"[{self.__class__.__name__} _get_response] run.status: {run.status}"
+            )
             if run.status != "requires_action":  # doesn't require action!
                 continue
 
             if (
                 run.required_action is None
             ):  # run.required_action is not properly defined
-                print("[_get_response] run.required_action is None")
+                print(
+                    "[{self.__class__.__name__} _get_response] run.required_action is None"
+                )
                 run = self.client.beta.threads.runs.submit_tool_outputs(
                     thread_id=thread_id,
                     run_id=run.id,
@@ -291,14 +303,17 @@ class OpenAILLM:
             for tool_call in run.required_action.submit_tool_outputs.tool_calls:
                 # process tool_call
                 print(
-                    f"\n\n[_get_response] executing function {tool_call.function.name}, with args: {tool_call.function.arguments}\n\n"
+                    f"[{self.__class__.__name__} _get_response] executing function {tool_call.function.name}, with args: {tool_call.function.arguments}"
                 )
 
+                # parse arguments for tool-function
                 args = {}
                 try:
                     args = json.loads(tool_call.function.arguments)
                 except Exception as e:
-                    print(f"function argument parsing error: {e}, args: {args}")
+                    print(
+                        f"[{self.__class__.__name__} _get_response]function argument parsing error: {e}, args: {args}"
+                    )
 
                 # call tool_function
                 (

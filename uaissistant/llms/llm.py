@@ -23,7 +23,7 @@ class LLM(Protocol):
     ) -> AssistantEntity:
         pass
 
-    async def delete_assistant(self, assistant_id):
+    async def delete_assistant(self, assistant_id: str):
         pass
 
     async def create_thread(
@@ -36,11 +36,11 @@ class LLM(Protocol):
 
     async def process_user_message(
         self,
-        assistant_id: str,
+        assistant: AssistantEntity,
         thread_id: str,
         message: str,
     ) -> List[AssistantMessageItem]:
         pass
 
-    async def update_tools(self, assistant_id):
+    async def update_tools(self, assistant_id: str):
         pass

@@ -38,6 +38,21 @@ class ToolFunction(BaseModel, ABC):
                 else [],
             },
         }
+        cls.anthropicschema = {
+            "name": cls.__name__,
+            "description": cls.__doc__,
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    k: v
+                    for k, v in _schema["properties"].items()
+                    if k != "self"
+                },
+                "required": list(_schema["required"])
+                if "required" in _schema
+                else [],
+            },
+        }
         cls.Metadata.subclasses.append(cls)
 
     def __call__(

@@ -1,10 +1,14 @@
 from typing import Dict
 from uaissistant.assistant.schemas import LLMSource
-from uaissistant.llms.anthropic.repository import IAnthropicRepository
+from uaissistant.llms.anthropic.repository import (
+    AnthropicRepository,
+    IAnthropicRepository,
+)
 from uaissistant.llms.llm import LLM
 from uaissistant.llms.openai.openaillm import OpenAILLM
 from uaissistant.tool_factory.service import IToolFactoryService
-from injector import Module, multiprovider
+from injector import Module, multiprovider, provider
+from sqlalchemy.orm import Session
 from openai import Client
 
 from anthropic import Anthropic
@@ -30,3 +34,9 @@ class LlmsModule(Module):
                 anthropic_repository=anthropic_repository,
             ),
         }
+
+    @provider
+    def provide_anthropic_repository(
+        self, session: Session
+    ) -> IAnthropicRepository:
+        return AnthropicRepository(session=session)

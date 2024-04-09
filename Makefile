@@ -3,9 +3,9 @@ include .env
 export
 
 # Define targets and their recipes
-.PHONY: onboarding clean install update run
+.PHONY: initdb startdb stopdb cleandb install update run
 
-db:
+initdb:
 	# Pull the postgres Docker image
 	docker pull postgres
 	# Create a Docker volume for storing PostgreSQL data
@@ -17,8 +17,15 @@ db:
 	# Execute commands in the PostgreSQL container
 	docker exec -it $(CONTAINER_NAME) bash -c "psql -U postgres -d postgres -f /init.sql"
 
-clean:
-	# Cleanup
+startdb:
+	docker stop $(CONTAINER_NAME)
+	docker run --name $(CONTAINER_NAME) -e POSTGRES_PASSWORD=$(DB_PASSWORD) -d -p $(DB_PORT):$(DB_PORT) -v $(VOLUME_NAME):/var/lib/postgresql/data postgres
+
+stopdb:
+	docker stop $(CONTAINER_NAME)
+
+cleandb:
+	# Cleanup DB
 	docker stop $(CONTAINER_NAME)
 	docker rm $(CONTAINER_NAME)
 

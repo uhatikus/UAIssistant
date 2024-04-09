@@ -1,13 +1,21 @@
+import re
 import uuid
 from datetime import datetime
-from typing import List, Tuple
+from typing import List
 
 from anthropic import Anthropic
-from uaissistant.assistant.models import AssistantMessageItem
+from anthropic.resources.beta.tools.messages import ToolsBetaMessage
+from uaissistant.assistant.models import (
+    AssistantMessageItem,
+    AssistantMessageValue,
+)
 from uaissistant.assistant.schemas import (
     AssistantEntity,
+    AssistantMessageEntity,
+    AssistantMessageType,
     AssistantThreadEntity,
     LLMSource,
+    Role,
 )
 from uaissistant.llms.anthropic.repository import IAnthropicRepository
 from uaissistant.llms.llm import LLM
@@ -26,6 +34,8 @@ class AnthropicLLM(LLM):
         self.client = client
         self.tool_factory = tool_factory
         self.anthropic_repository = anthropic_repository
+
+        self.temperature = 0.1
 
         self._self_update_tools()
 
@@ -53,7 +63,7 @@ class AnthropicLLM(LLM):
         instructions,
         model,
     ) -> AssistantEntity:
-        # self._self_update_tools()
+        self._self_update_tools()
         assistant = AssistantEntity(
             id=assistant_id,
             name=name,
@@ -64,48 +74,174 @@ class AnthropicLLM(LLM):
         )
         return assistant
 
-    async def delete_assistant(self, assistant_id):
+    async def delete_assistant(self, assistant_id: str):
         return
 
-    async def create_thread(self, default_name) -> AssistantThreadEntity:
+    async def create_thread(
+        self, assistant_id: str, default_name: str
+    ) -> AssistantThreadEntity:
         thread = AssistantThreadEntity(
-            id=f"claude_asst_{str(uuid.uuid4())}",
+            id=f"claude_thread_{str(uuid.uuid4())}",
             name=default_name,
+            assistant_id=assistant_id,
             created_at=datetime.now(),
         )
         return thread
 
-    async def delete_thread(self, thread_id):
+    async def delete_thread(self, thread_id: str):
         return
 
     async def process_user_message(
         self,
-        assistant_id: str,
+        assistant: AssistantEntity,
         thread_id: str,
         message: str,
-    ) -> Tuple[AssistantMessageItem, List[AssistantMessageItem]]:
-        # TODO: improve
-        message = self.client.messages.create(
-            model="claude-3-opus-20240229",
-            max_tokens=1024,
-            messages=[{"role": "user", "content": "Hello, Claude"}],
+    ) -> List[AssistantMessageItem]:
+        print(
+            f"[{self.__class__.__name__}: process_user_message] you message '{message}' is being sent to the assistat"
         )
-        print(message.content)
+        # define user message
+        user_message = AssistantMessageItem(
+            id=f"user2claude_message_{str(uuid.uuid4())}",
+            role=Role.User,
+            created_at=datetime.now(),
+            value=AssistantMessageValue(
+                type=AssistantMessageType.Text, content={"message": message}
+            ),
+        )
 
-    async def update_tools(self, assistant_id):
-        # TODO: improve
-        pass
+        # prepare messages from Anthropic
+        old_messages: List[
+            AssistantMessageEntity
+        ] = await self.anthropic_repository.list_old_messages(
+            thread_id=thread_id
+        )
+        messages_for_anthropic = [
+            {"role": m.role, "content": m.content["message"]}
+            for m in old_messages
+            if "message" in m.content and "internal" not in m.id
+        ]
+
+        # add new user message
+        user_message_for_anthropic = {
+            "role": "user",
+            "content": message,
+        }
+        messages_for_anthropic.append(user_message_for_anthropic)
+
+        # output list
+        frontend_outputs: List[AssistantMessageItem] = []
+
+        # initial anthropic call
+        response: ToolsBetaMessage = self.client.beta.tools.messages.create(
+            model=assistant.model,
+            max_tokens=1024,
+            tools=self.anthropic_tools,
+            system=assistant.instructions,
+            messages=messages_for_anthropic,
+            temperature=self.temperature,
+        )
+
+        messages_for_anthropic.append(
+            {"role": response.role, "content": response.content}
+        )
+        tool_outputs = []
+
+        while response.stop_reason == "tool_use":
+            print(
+                f"[{self.__class__.__name__}: process_user_message] current response {response.content}"
+            )
+            for content in response.content:
+                # skip text and other non-tool-function content
+                if content.type != "tool_use":
+                    continue
+
+                print(
+                    f"[{self.__class__.__name__}: process_user_message] executing function {content.name}, with args: {content.input}"
+                )
+
+                # call tool_function
+                (
+                    output,
+                    new_frontend_contents,
+                ) = self.tool_factory.call_tool_function(
+                    function_name=content.name, args=content.input
+                )
+
+                # save the resulted ouputs
+                tool_outputs.append(
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": content.id,  # from the API response
+                        "content": output,  # from running your tool
+                    }
+                )
+                frontend_outputs.extend(new_frontend_contents)
+
+            messages_for_anthropic.append(
+                {"role": "user", "content": tool_outputs}
+            )
+            print(messages_for_anthropic)
+
+            # submit the results of the tool-functions
+            response: ToolsBetaMessage = self.client.beta.tools.messages.create(
+                model=assistant.model,
+                max_tokens=1024,
+                tools=self.anthropic_tools,
+                system=assistant.instructions,
+                messages=messages_for_anthropic,
+                temperature=self.temperature,
+            )
+            messages_for_anthropic.append(
+                {"role": response.role, "content": response.content}
+            )
+            tool_outputs = []
+
+        # prepare the final message from the OpenAI Assistant
+        # for each message, create a value wrapper.
+        for content in response.content:
+            if content.text is not None:
+                initial_claude_response = content.text
+                print(
+                    f"[{self.__class__.__name__}: process_user_message] initial claude response: {initial_claude_response}"
+                )
+                content_message = self._remove_thinking_tags(
+                    initial_claude_response
+                )
+                assistant_frontent_output = AssistantMessageItem(
+                    id=f"claude_message_{str(uuid.uuid4())}",
+                    role=Role.Assistant,
+                    created_at=datetime.now(),
+                    value=AssistantMessageValue(
+                        type=AssistantMessageType.Text,
+                        content={"message": content_message},
+                    ),
+                )
+                frontend_outputs.append(assistant_frontent_output)
+
+        responses = frontend_outputs
+
+        user_message_and_responses = [user_message] + responses
+        return user_message_and_responses
+
+    async def update_tools(self, assistant_id: str):
+        self._self_update_tools()
 
     def _self_update_tools(self):
         # gather tools information
         # TODO: use XML
-        self.openai_tools = [{"type": "code_interpreter"}]
+        self.anthropic_tools = []
         for function_name in [
             attr for attr in dir(tools) if callable(getattr(tools, attr))
         ]:
             function: ToolFunction = getattr(tools, function_name)
-            tool_function_defenition = {
-                "type": "function",
-                "function": function.openaischema,
-            }
-            self.openai_tools.append(tool_function_defenition)
+            self.anthropic_tools.append(function.anthropicschema)
+
+    def _remove_thinking_tags(self, text):
+        # Define the pattern to match <thinking> ... </thinking> tags
+        pattern = re.compile(r"<thinking>.*?</thinking>\n\n", re.DOTALL)
+
+        # Remove everything inside <thinking> tags
+        cleaned_text = re.sub(pattern, "", text)
+
+        return cleaned_text

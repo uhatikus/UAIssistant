@@ -65,8 +65,11 @@ cd UAIssistant
 ### Run locally (dev)
 
 ```
-# create postgres db in docker (run "make clean" if you are refreshing the db)
-make db
+# create postgres db in docker
+# run "make startdb" if you would like to restart the db
+# run "make stopdb" if you would like to stop the db
+# run "make cleandb" if you would like to refresh the db
+make initdb
 # install poetry dependencies
 make install
 # start the BE
