@@ -7,9 +7,9 @@ from uaissistant.llms.anthropic.repository import (
 )
 
 
-class ToolFactoryModule(Module):
+class AnthropicLLMModule(Module):
     @provider
-    def provide_anthropic_repository(
+    def provide_anthropicllm_repository(
         self, session: Session
     ) -> IAnthropicRepository:
         return AnthropicRepository(session=session)

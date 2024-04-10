@@ -6,6 +6,8 @@ from uaissistant.connections import (
     OpenAiModule,
 )
 from uaissistant.llms import LlmsModule
+from uaissistant.llms.anthropic.module import AnthropicLLMModule
+from uaissistant.llms.gemini.module import GeminiLLMModule
 from uaissistant.tool_factory import ToolFactoryModule
 from injector import Injector
 from fastapi import FastAPI
@@ -19,14 +21,19 @@ from fastapi.middleware.cors import CORSMiddleware
 
 injector = Injector(
     [
+        # assistant module
         AssistantModule(),
+        # toolfactory module
         ToolFactoryModule(),
-        LlmsModule(),
         # connections
         ConfigModule(),
         DbModule(),
         OpenAiModule(),
         AnthropicModule(),
+        # llm modules
+        LlmsModule(),
+        AnthropicLLMModule(),
+        GeminiLLMModule(),
     ]
 )
 app = FastAPI(root_path="/api")

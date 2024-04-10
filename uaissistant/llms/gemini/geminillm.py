@@ -1,10 +1,12 @@
-import re
 import uuid
+import textwrap
 from datetime import datetime
 from typing import List
+from environs import Env
+import google.generativeai as genai
+import google.ai.generativelanguage as glm
+from google.generativeai.types import GenerateContentResponse
 
-from anthropic import Anthropic
-from anthropic.resources.beta.tools.messages import ToolsBetaMessage
 from uaissistant.assistant.models import (
     AssistantMessageItem,
     AssistantMessageValue,
@@ -17,37 +19,37 @@ from uaissistant.assistant.schemas import (
     LLMSource,
     Role,
 )
-from uaissistant.llms.anthropic.repository import IAnthropicRepository
+from uaissistant.llms.gemini.repository import IGeminiRepository
 from uaissistant.llms.llm import LLM
 from uaissistant.tool_factory import tools
 from uaissistant.tool_factory.service import IToolFactoryService
 from uaissistant.tool_factory.schemas.tool_function import ToolFunction
 
+from IPython.display import Markdown
 
-class AnthropicLLM(LLM):
+
+class GeminiLLM(LLM):
     def __init__(
         self,
-        client: Anthropic,
+        env: Env,
         tool_factory: IToolFactoryService,
-        anthropic_repository: IAnthropicRepository,
+        gemini_repository: IGeminiRepository,
     ):
-        self.client = client
+        genai.configure(api_key=env.str("GEMINI_API_KEY"))
         self.tool_factory = tool_factory
-        self.anthropic_repository = anthropic_repository
-
-        self.temperature = 0.1
+        self.gemini_repository = gemini_repository
 
         self._self_update_tools()
 
     @property
     def source(self):
-        return LLMSource.Anthropic
+        return LLMSource.Gemini
 
     async def create_assistant(
         self, name: str, instructions: str, model: str
     ) -> AssistantEntity:
         assistant = AssistantEntity(
-            id=f"claude_asst_{str(uuid.uuid4())}",
+            id=f"gemini_asst_{str(uuid.uuid4())}",
             name=name,
             created_at=datetime.now(),
             instructions=instructions,
@@ -81,7 +83,7 @@ class AnthropicLLM(LLM):
         self, assistant_id: str, default_name: str
     ) -> AssistantThreadEntity:
         thread = AssistantThreadEntity(
-            id=f"claude_thread_{str(uuid.uuid4())}",
+            id=f"gemini_thread_{str(uuid.uuid4())}",
             name=default_name,
             assistant_id=assistant_id,
             created_at=datetime.now(),
@@ -102,7 +104,7 @@ class AnthropicLLM(LLM):
         )
         # define user message
         user_message = AssistantMessageItem(
-            id=f"user2claude_message_{str(uuid.uuid4())}",
+            id=f"user2gemini_message_{str(uuid.uuid4())}",
             role=Role.User,
             created_at=datetime.now(),
             value=AssistantMessageValue(
@@ -110,54 +112,61 @@ class AnthropicLLM(LLM):
             ),
         )
 
-        # prepare messages for Anthropic
+        # prepare messages for Gemini
         old_messages: List[
             AssistantMessageEntity
-        ] = await self.anthropic_repository.list_old_messages(
-            thread_id=thread_id
-        )
-        messages_for_anthropic = [
-            {"role": m.role, "content": m.content["message"]}
+        ] = await self.gemini_repository.list_old_messages(thread_id=thread_id)
+        messages_for_gemini = [
+            {
+                "role": "model" if m.role == "assistant" else m.role,
+                "parts": [m.content["message"]],
+            }
             for m in old_messages
             if "message" in m.content
         ]
 
         # add new user message
-        user_message_for_anthropic = {
+        user_message_for_gemini = {
             "role": "user",
-            "content": message,
+            "parts": [message],
         }
-        messages_for_anthropic.append(user_message_for_anthropic)
+        messages_for_gemini.append(user_message_for_gemini)
 
         # output list
         frontend_outputs: List[AssistantMessageItem] = []
 
-        # initial anthropic call
-        response: ToolsBetaMessage = self.client.beta.tools.messages.create(
-            model=assistant.model,
-            max_tokens=1024,
-            tools=self.anthropic_tools,
-            system=assistant.instructions,
-            messages=messages_for_anthropic,
-            temperature=self.temperature,
+        # use gemini model
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-pro-latest",  # assistant.model,
+            tools=glm.Tool(function_declarations=self.gemini_tools),
+            system_instruction=assistant.instructions,
         )
 
-        messages_for_anthropic.append(
-            {"role": response.role, "content": response.content}
+        # initial gemini call
+        response: GenerateContentResponse = model.generate_content(
+            messages_for_gemini
+        )
+        # role = response._result.candidates[0].content.role
+        parts = response._result.candidates[0].content.parts
+        messages_for_gemini.append(
+            {
+                "role": "model",
+                "parts": parts,
+            }
         )
         tool_outputs = []
 
-        while response.stop_reason == "tool_use":
+        while any("function_call" in part for part in parts):
             print(
-                f"[{self.__class__.__name__}: process_user_message] current response {response.content}"
+                f"[{self.__class__.__name__}: process_user_message] current response {parts}"
             )
-            for content in response.content:
+            for part in parts:
                 # skip text and other non-tool-function content
-                if content.type != "tool_use":
+                if "function_call" not in part:
                     continue
 
                 print(
-                    f"[{self.__class__.__name__}: process_user_message] executing function {content.name}, with args: {content.input}"
+                    f"[{self.__class__.__name__}: process_user_message] executing function {part.function_call.name}, with args: {part.function_call.args}"
                 )
 
                 # call tool_function
@@ -165,54 +174,44 @@ class AnthropicLLM(LLM):
                     output,
                     new_frontend_contents,
                 ) = self.tool_factory.call_tool_function(
-                    function_name=content.name, args=content.input
+                    function_name=part.function_call.name,
+                    args=part.function_call.args,
                 )
 
                 # save the resulted ouputs
                 tool_outputs.append(
-                    {
-                        "type": "tool_result",
-                        "tool_use_id": content.id,  # from the API response
-                        "content": output,  # from running your tool
-                    }
+                    glm.Part(
+                        function_response=glm.FunctionResponse(
+                            name=part.function_call.name,
+                            response={"result": output},
+                        )
+                    )
                 )
                 frontend_outputs.extend(new_frontend_contents)
 
             # submit the results of the tool-functions
-            messages_for_anthropic.append(
-                {"role": "user", "content": tool_outputs}
+            messages_for_gemini.append({"role": "user", "parts": tool_outputs})
+            response: GenerateContentResponse = model.generate_content(
+                messages_for_gemini
             )
-            response: ToolsBetaMessage = self.client.beta.tools.messages.create(
-                model=assistant.model,
-                max_tokens=1024,
-                tools=self.anthropic_tools,
-                system=assistant.instructions,
-                messages=messages_for_anthropic,
-                temperature=self.temperature,
-            )
-            messages_for_anthropic.append(
-                {"role": response.role, "content": response.content}
-            )
+            parts = response._result.candidates[0].content.parts
+            messages_for_gemini.append({"role": "model", "parts": parts})
             tool_outputs = []
 
         # prepare the final message from the OpenAI Assistant
         # for each message, create a value wrapper.
-        for content in response.content:
-            if content.text is not None:
-                initial_claude_response = content.text
+        for part in parts:
+            if "text" in part:
                 print(
-                    f"[{self.__class__.__name__}: process_user_message] initial claude response: {initial_claude_response}"
-                )
-                content_message = self._remove_thinking_tags(
-                    initial_claude_response
+                    f"[{self.__class__.__name__}: process_user_message] response: {part.text}"
                 )
                 assistant_frontent_output = AssistantMessageItem(
-                    id=f"claude_message_{str(uuid.uuid4())}",
+                    id=f"gemini_message_{str(uuid.uuid4())}",
                     role=Role.Assistant,
                     created_at=datetime.now(),
                     value=AssistantMessageValue(
                         type=AssistantMessageType.Text,
-                        content={"message": content_message},
+                        content={"message": part.text},
                     ),
                 )
                 frontend_outputs.append(assistant_frontent_output)
@@ -227,18 +226,13 @@ class AnthropicLLM(LLM):
 
     def _self_update_tools(self):
         # gather tools information
-        self.anthropic_tools = []
+        self.gemini_tools = []
         for function_name in [
             attr for attr in dir(tools) if callable(getattr(tools, attr))
         ]:
             function: ToolFunction = getattr(tools, function_name)
-            self.anthropic_tools.append(function.anthropicschema)
+            self.gemini_tools.append(function.geminischema)
 
-    def _remove_thinking_tags(self, text):
-        # Define the pattern to match <thinking> ... </thinking> tags
-        pattern = re.compile(r"<thinking>.*?</thinking>\n\n", re.DOTALL)
-
-        # Remove everything inside <thinking> tags
-        cleaned_text = re.sub(pattern, "", text)
-
-        return cleaned_text
+    def _to_markdown(self, text):
+        text = text.replace("•", "  *")
+        return Markdown(textwrap.indent(text, "> ", predicate=lambda _: True))

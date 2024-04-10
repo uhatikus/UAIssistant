@@ -7,14 +7,14 @@ from uaissistant.assistant.schemas import AssistantMessageEntity
 
 
 @runtime_checkable
-class IAnthropicRepository(Protocol):
+class IGeminiRepository(Protocol):
     async def list_old_messages(
         self, thread_id: str
     ) -> List[AssistantMessageEntity]:
         pass
 
 
-class AnthropicRepository:
+class GeminiRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
 
@@ -36,4 +36,4 @@ class AnthropicRepository:
 
 
 if TYPE_CHECKING:
-    _: type[IAnthropicRepository] = AnthropicRepository
+    _: type[IGeminiRepository] = GeminiRepository

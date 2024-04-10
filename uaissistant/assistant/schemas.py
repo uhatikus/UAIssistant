@@ -7,6 +7,7 @@ from typing import Any
 class LLMSource(Enum):
     OpenAI = "openai"
     Anthropic = "anthropic"
+    Gemini = "gemini"
 
 
 @dataclass
