@@ -29,7 +29,7 @@ For Linux users: `sudo apt install python3.10`
 
 For MacOS users: `brew install python@3.10`
 
-Otherwise, please, go to the official [Python website](https://www.python.org/downloads/), download and install Python (we use `python3.10`.).
+Otherwise, please, go to the official [Python website](https://www.python.org/downloads/), download and install Python `python3.10`.
 
 ### Install Poetry
 
@@ -45,7 +45,7 @@ There are several ways to install docker:
 - [Rancher Desktop](https://rancherdesktop.io/) (good option for MacOS)
 - [Podman](https://podman.io/)
 
-`docker-compose` is also required. Check that you have `docker-compose` with the command `docker-compose --version`. If you don't have it, please, run the following code (for Linus and MacOS users):
+`docker-compose` is also required. Check if you have `docker-compose` with the command `docker-compose --version`. If you don't have it, please, run the following code (for Linus and MacOS users):
 
 ```
 sudo curl -L "https://github.com/docker/compose/releases/download/{VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -54,7 +54,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 ## Install and Run
 
-First of all clone the repository:
+Clone the repository:
 
 ```
 git clone git@github.com:uhatikus/UAIssistant.git
@@ -63,7 +63,7 @@ cd UAIssistant
 
 ### Set env variables
 
-1. Create .env file and copy the content of .env.example to .env: `cp .env.example .env`. You can use your DB env variables.
+1. Create `.env` file and copy the content of `.env.example` to `.env`: `cp .env.example .env`. You can use your DB env variables.
 2. Set your LLMs API KEY-s:
 
 - OPENAI_API_KEY: [get open-ai API key](https://platform.openai.com/api-keys),
@@ -91,17 +91,17 @@ make run
 docker-compose up --build
 ```
 
-(you can remove `--build` if you have already built the docker containers)
+Remove `--build` if you have already built the docker containers
 
 ## How to use
 
 ### 1. Swagger docs
 
-You can open [Swagger documentation](http://0.0.0.0:8000/docs#/) and try the requests.
+Open [Swagger documentation](http://0.0.0.0:8000/docs#/) and perform the requests.
 
 ### 2. UAIssistant FE
 
-You can start [UAIssistant-FE](https://github.com/uhatikus/UAIssistant-FE) and play around with the APIs via intuitive UI.
+Start [UAIssistant-FE](https://github.com/uhatikus/UAIssistant-FE) and play around with the APIs via intuitive UI.
 
 ## Tool-functions Development
 
@@ -109,7 +109,7 @@ You can start [UAIssistant-FE](https://github.com/uhatikus/UAIssistant-FE) and p
 
 ## DB Access
 
-You can access the DB with DataGrip or DBveaver. Use the details from .env file. s
+Access the DB with DataGrip or DBveaver. Use the details from `.env` file.
 
 DataGrip example:
 ![DataGrip DB connection](readmedia/datagrip.png)
