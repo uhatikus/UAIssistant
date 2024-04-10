@@ -91,7 +91,7 @@ make run
 docker-compose up --build
 ```
 
-Remove `--build` if you have already built the docker containers
+Remove `--build` if you have already built the docker containers.s
 
 ## How to use
 
