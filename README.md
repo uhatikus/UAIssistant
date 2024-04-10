@@ -10,8 +10,12 @@
   - [Set env variables](#set-env-variables)
   - [Run locally (dev)](#run-locally-dev)
   - [Run with docker (prod)](#run-with-docker-prod)
+- [How to use](#how-to-use)
+  - [1. Swagger docs](#1-swagger-docs)
+  - [2. UAIssistant-FE](#2-uaissistant-fe)
 - [Tool-functions Development](#tool-functions-development)
-- [Access DB](#access-db)
+- [DB Access](#db-access)
+- [Acknowledgement](#acknowledgement)
 
 ## Requirements
 
@@ -59,8 +63,12 @@ cd UAIssistant
 
 ### Set env variables
 
-1. Create .env file and copy the content of .env.example to .env: `cp .env.example .env`
-2. Set your OPENAI_API_KEY ([get open-ai API key](https://platform.openai.com/api-keys)) and ANTHROPIC_API_KEY ([get anthropic API key](https://console.anthropic.com/settings/keys)).
+1. Create .env file and copy the content of .env.example to .env: `cp .env.example .env`. You can use your DB env variables.
+2. Set your LLMs API KEY-s:
+
+- OPENAI_API_KEY: [get open-ai API key](https://platform.openai.com/api-keys),
+- ANTHROPIC_API_KEY: [get anthropic API key](https://console.anthropic.com/settings/keys)
+- GEMINI_API_KEY: [get gemini API key](https://aistudio.google.com/app/apikey) (available only from certain locations like US, VPN can resolve your issues).
 
 ### Run locally (dev)
 
@@ -85,13 +93,34 @@ docker-compose up --build
 
 (you can remove `--build` if you have already built the dockere containers)
 
+## How to use
+
+### 1. Swagger docs
+
+You can open [Swagger documentation](http://0.0.0.0:8000/docs#/) and try the requests.
+
+### 2. UAIssistant FE
+
+You can start [UAIssistant-FE](https://github.com/uhatikus/UAIssistant-FE) and play around with the APIs via intuitive UI.
+
 ## Tool-functions Development
 
 [Readme "How to develop tool-funtions"](uaissistant/tool_factory/README.md)
 
-## Access DB
+## DB Access
 
 You can access the DB with DataGrip or DBveaver. Use the details from .env file. s
 
 DataGrip example:
 ![DataGrip DB connection](readmedia/datagrip.png)
+
+## Acknowledgement
+
+I would like to express my sincere gratitude to everyone who made this project possible:
+
+- [Simon Dae Oong Kim](https://www.linkedin.com/in/simondkim/)
+- [Terry (심탁길) Shim](https://www.linkedin.com/in/terry-shim-82660a50/)
+- [Hyeonsoo (David) Lee](https://www.linkedin.com/in/civilizeddev/)
+- [Aidyn Aluadin](https://www.linkedin.com/in/aaidyn/)
+- [Shyngys Aitkazinov](https://www.linkedin.com/in/shyngys-aitkazinov-00496b193/)
+- [Gaukhar Alina](https://www.linkedin.com/in/gaukhar-alina/)
