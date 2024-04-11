@@ -8,7 +8,7 @@ from uaissistant.tool_factory.repository import IToolFactoryRepository
 from uaissistant.tool_factory.schemas.tool_function import ToolFunction
 
 
-DATASETS = ["iris"]
+DATASETS = ["iris", "diabetes"]
 
 
 class get_datasets(ToolFunction):
