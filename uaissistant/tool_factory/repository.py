@@ -7,7 +7,7 @@ from sqlalchemy.sql import text
 
 @runtime_checkable
 class IToolFactoryRepository(Protocol):
-    async def get_data(self, dataset_name) -> pd.DataFrame:
+    def get_data(self, dataset_name: str) -> pd.DataFrame:
         pass
 
 
@@ -15,7 +15,7 @@ class ToolFactoryRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
 
-    async def get_data(self, dataset_name) -> pd.DataFrame:
+    def get_data(self, dataset_name: str) -> pd.DataFrame:
         query = f"SELECT * FROM {dataset_name}"
 
         result = self.session.execute(text(query))

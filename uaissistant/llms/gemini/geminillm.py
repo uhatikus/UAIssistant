@@ -166,7 +166,7 @@ class GeminiLLM(LLM):
                     continue
 
                 print(
-                    f"[{self.__class__.__name__}: process_user_message] executing function {part.function_call.name}, with args: {part.function_call.args}"
+                    f"[{self.__class__.__name__}: process_user_message] executing function {part.function_call.name}, with args: {dict(part.function_call.args)}"
                 )
 
                 # call tool_function
@@ -195,7 +195,14 @@ class GeminiLLM(LLM):
                 messages_for_gemini
             )
             parts = response._result.candidates[0].content.parts
-            messages_for_gemini.append({"role": "model", "parts": parts})
+            new_parts = []
+            if any("function_call" in part for part in parts):
+                for part in parts:
+                    if "text" not in part:
+                        new_parts.append(part)
+            else:
+                break
+            messages_for_gemini.append({"role": "model", "parts": new_parts})
             tool_outputs = []
 
         # prepare the final message from the OpenAI Assistant

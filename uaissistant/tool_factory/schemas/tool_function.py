@@ -74,7 +74,7 @@ class ToolFunction(BaseModel, ABC):
                         type=type2glmtype.get(
                             v["type"], glm.Type.TYPE_UNSPECIFIED
                         ),
-                        description=f"{v['description']}. Default value: {v['default']}",
+                        description=f"{v['description']}.{' Default value: ' + str(v['default']) if 'default' in v else ''}",
                     )
                     for k, v in _schema["properties"].items()
                     if k != "self"

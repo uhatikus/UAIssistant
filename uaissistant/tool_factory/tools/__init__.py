@@ -6,5 +6,6 @@ from .data_analysis import (
     get_dataset_columns,  # noqa: F401
     histogram,  # noqa: F401
     statistics,  # noqa: F401
+    modeling,  # noqa: F401
 )
 ### DO NOT USE IT: from .forbidden import execute_bash_scripts

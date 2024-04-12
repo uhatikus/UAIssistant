@@ -2,7 +2,6 @@ from abc import abstractmethod
 from typing import List, Tuple, Any
 
 import pandas as pd
-import plotly.express as px
 from pydantic import Field
 from uaissistant.assistant.models import AssistantMessageValue
 from uaissistant.tool_factory.repository import IToolFactoryRepository
@@ -19,10 +18,6 @@ class DataAnalyser(ToolFunction):
     target_columns: List[str] = Field(
         default=None,
         description="The columns of the dataset that the user would like to plot. By default, this function will use all available columns in the dataset.",
-    )
-    colors: List[str] = Field(
-        default=px.colors.qualitative.Set1,
-        description="List of colors to use. Example: ['rgb(228,26,28)', 'rgb(55,126,184)', 'rgb(77,175,74)']. Applied in same order as target_columns List.",
     )
 
     colorscale: str = Field(

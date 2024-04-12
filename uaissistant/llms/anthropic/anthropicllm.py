@@ -36,6 +36,7 @@ class AnthropicLLM(LLM):
         self.anthropic_repository = anthropic_repository
 
         self.temperature = 0.1
+        self.API_TIMEOUT = 10
 
         self._self_update_tools()
 
@@ -129,6 +130,7 @@ class AnthropicLLM(LLM):
         }
         messages_for_anthropic.append(user_message_for_anthropic)
 
+        print(messages_for_anthropic)
         # output list
         frontend_outputs: List[AssistantMessageItem] = []
 
@@ -140,6 +142,7 @@ class AnthropicLLM(LLM):
             system=assistant.instructions,
             messages=messages_for_anthropic,
             temperature=self.temperature,
+            timeout=self.API_TIMEOUT,
         )
 
         messages_for_anthropic.append(
@@ -189,6 +192,7 @@ class AnthropicLLM(LLM):
                 system=assistant.instructions,
                 messages=messages_for_anthropic,
                 temperature=self.temperature,
+                timeout=self.API_TIMEOUT,
             )
             messages_for_anthropic.append(
                 {"role": response.role, "content": response.content}

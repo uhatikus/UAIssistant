@@ -47,7 +47,7 @@ class statistics(DataAnalyser):
         output = f"The user has successfully received the statistics. The columns names of this dataset: {column_names}"
         frontend_values = [
             AssistantMessageValue(
-                type=AssistantMessageType.Plot,
+                type=AssistantMessageType.Text,
                 content={
                     "message": f"The statistics for the columns: {'; '.join(list(self.target_columns))} are as follows:\n\n{stats.to_markdown()}"
                 },

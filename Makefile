@@ -19,7 +19,7 @@ initdb:
 
 startdb:
 	docker stop $(CONTAINER_NAME)
-	docker run --name $(CONTAINER_NAME) -e POSTGRES_PASSWORD=$(DB_PASSWORD) -d -p $(DB_PORT):$(DB_PORT) -v $(VOLUME_NAME):/var/lib/postgresql/data postgres
+	docker start $(CONTAINER_NAME)
 
 stopdb:
 	docker stop $(CONTAINER_NAME)

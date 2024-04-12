@@ -53,7 +53,7 @@ class modeling(DataAnalyser):
     )
 
     predicted_vs_actual_plot_idealcase_color: str = Field(
-        default="blue",
+        default="red",
         description="Color for `predicted vs actual plot` for ideal case line. Examples: 'black', 'green', 'rgb(228,26,28)', 'rgb(55,126,184)', 'rgb(77,175,74)'.",
     )
 
@@ -108,10 +108,12 @@ class modeling(DataAnalyser):
                     },
                 )
             )
+
+        final_message = ("\n\n").join(text_outputs)
         frontend_values.append(
             AssistantMessageValue(
-                type=AssistantMessageType.Plot,
-                content={"message": f"{'\n\n'.join(text_outputs)}"},
+                type=AssistantMessageType.Text,
+                content={"message": f"{final_message}"},
             )
         )
 
@@ -145,14 +147,23 @@ class modeling(DataAnalyser):
         y_pred = model.predict(X_test)
 
         accuracy_score_result = f"Accuracy: {accuracy_score(y_test, y_pred)}"
-        classification_report_result = (
-            f"\nClassification Report:\n{classification_report(y_test, y_pred)}"
-        )
+        classification_report_result = f"Classification Report:\n\n{classificationreport2dataframe(classification_report(y_test, y_pred, output_dict=True)).to_markdown()}"
 
         confusion_matrix_fig = self._get_confusion_matrix_plot(y_test, y_pred)
 
+        # Get importance values
+        importances = model.named_steps["classifier"].feature_importances_
+        model_preprocessor = model.named_steps["preprocessor"]
+
+        importances_fig = self._get_importance_plot(
+            importances,
+            model_preprocessor,
+            numeric_features,
+            categorical_features,
+        )
+
         text_outputs = [accuracy_score_result, classification_report_result]
-        fig_outputs = [confusion_matrix_fig]
+        fig_outputs = [confusion_matrix_fig, importances_fig]
 
         return text_outputs, fig_outputs
 
@@ -213,9 +224,15 @@ class modeling(DataAnalyser):
         predict_vs_actual_fig = self._get_predicted_vs_actual_plot(
             y_test, y_pred
         )
+        # Get importance values
+        importances = model.named_steps["regressor"].feature_importances_
+        model_preprocessor = model.named_steps["preprocessor"]
 
         importances_fig = self._get_importance_plot(
-            model, numeric_features, categorical_features
+            importances,
+            model_preprocessor,
+            numeric_features,
+            categorical_features,
         )
 
         text_outputs = [mean_squared_error_result, r2_score_result]
@@ -281,21 +298,24 @@ class modeling(DataAnalyser):
         return fig
 
     def _get_importance_plot(
-        self, model, numeric_features, categorical_features
+        self,
+        importances,
+        model_preprocessor,
+        numeric_features,
+        categorical_features,
     ):
-        # Get importance values
-        importances = model.named_steps["regressor"].feature_importances_
-
         # Get numerical feature names
         numeric_feature_names = numeric_features.tolist()
 
         # Get categorical feature names after one-hot encoding
-        categorical_feature_names = (
-            model.named_steps["preprocessor"]
-            .transformers_[1][1]
-            .named_steps["onehot"]
-            .get_feature_names_out(categorical_features)
-        )
+        try:
+            categorical_feature_names = (
+                model_preprocessor.transformers_[1][1]
+                .named_steps["onehot"]
+                .get_feature_names_out(categorical_features)
+            )
+        except Exception:
+            categorical_feature_names = []
 
         # Combine the numerical and categorical feature importances
         combined_importances = []
@@ -343,3 +363,11 @@ class modeling(DataAnalyser):
             yaxis_title="Importance",
         )
         return fig
+
+
+def classificationreport2dataframe(report):
+    df_classification_report = pd.DataFrame(report).transpose()
+    df_classification_report = df_classification_report.sort_values(
+        by=["f1-score"], ascending=False
+    )
+    return df_classification_report

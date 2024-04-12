@@ -15,9 +15,16 @@ from uaissistant.tool_factory.tools.data_analysis.data_analyser import (
     DataAnalyser,
 )
 
+import plotly.express as px
+
 
 class histogram(DataAnalyser):
     """Call this function to give to the user a histogram plot of the data available"""
+
+    colors: List[str] = Field(
+        default=px.colors.qualitative.Set1,
+        description="List of colors to use. Example: ['rgb(228,26,28)', 'rgb(55,126,184)', 'rgb(77,175,74)']. Applied in same order as target_columns List.",
+    )
 
     def run(
         self, tfr: IToolFactoryRepository, **args
@@ -178,6 +185,11 @@ class correlation_scatter_plot(DataAnalyser):
         default="dash", description="'dash', 'dot', or 'dashdot'"
     )
 
+    colors: List[str] = Field(
+        default=px.colors.qualitative.Set1,
+        description="List of colors to use. Example: ['rgb(228,26,28)', 'rgb(55,126,184)', 'rgb(77,175,74)']. Applied in same order as target_columns List.",
+    )
+
     def run(
         self, tfr: IToolFactoryRepository, **args
     ) -> Tuple[str, List[AssistantMessageValue]]:
@@ -210,7 +222,7 @@ class correlation_scatter_plot(DataAnalyser):
                 y=data.iloc[:, 1],
                 mode="markers",
                 marker=dict(
-                    color=self.colors,  # Use another column for color
+                    color=self.colors[0],  # Use another column for color
                 ),
             )
         )

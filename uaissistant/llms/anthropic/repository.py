@@ -23,7 +23,7 @@ class AnthropicRepository:
     ) -> List[AssistantMessageEntity]:
         query = """
         SELECT id, assistant_id, thread_id, created_at, role, type, content FROM assistant_message
-        WHERE thread_id = :thread_id AND id NOT LIKE 'internal%'
+        WHERE thread_id = :thread_id AND id NOT LIKE 'internal%' ORDER BY created_at
         """
         parameters = {
             "thread_id": thread_id,
