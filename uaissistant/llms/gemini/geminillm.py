@@ -195,6 +195,10 @@ class GeminiLLM(LLM):
                 messages_for_gemini
             )
             parts = response._result.candidates[0].content.parts
+            print("parts")
+            print(parts)
+            print("messages_for_gemini")
+            print(messages_for_gemini)
             new_parts = []
             if any("function_call" in part for part in parts):
                 for part in parts:
@@ -202,6 +206,8 @@ class GeminiLLM(LLM):
                         new_parts.append(part)
             else:
                 break
+            print("new_parts")
+            print(new_parts)
             messages_for_gemini.append({"role": "model", "parts": new_parts})
             tool_outputs = []
 

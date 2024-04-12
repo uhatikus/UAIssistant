@@ -40,8 +40,14 @@ class histogram(DataAnalyser):
             good_columns=data.select_dtypes(include=["number"])
         )
 
+        if len(self.target_columns) > len(self.colors):
+            raise Exception(
+                f"The number of columns ({len(self.target_columns)} is more than the number of colors {len(self.colors)}) for plotting"
+            )
+
         # get the data only for target columns
         data = data[self.target_columns]
+        print(data)
 
         #############################
         ##### from data to plot #####
