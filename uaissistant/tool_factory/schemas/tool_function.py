@@ -32,7 +32,7 @@ class ToolFunction(BaseModel, ABC):
         _schema = cls.model_json_schema()
         if cls.__doc__ is None:
             raise ValueError(
-                f"OpenAIFunction subclass {cls.__name__} must have a docstring"
+                f"ToolFunction subclass {cls.__name__} must have a docstring"
             )
         cls.openaischema = {
             "name": cls.__name__,

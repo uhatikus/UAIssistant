@@ -199,7 +199,7 @@ class AnthropicLLM(LLM):
             )
             tool_outputs = []
 
-        # prepare the final message from the OpenAI Assistant
+        # prepare the final message from the LLM
         # for each message, create a value wrapper.
         for content in response.content:
             if content.text is not None:

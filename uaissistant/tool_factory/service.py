@@ -41,7 +41,7 @@ class ToolFactoryService:
                 output = f"The function '{function_name}' does not exist in the module."
                 print(f"[{self.__class__.__name__}] {output}")
         except Exception as e:
-            output = f"Error running the function {function_name}. Error {e}"
+            output = f"Error running the function {function_name}. Error {e}. Consider to stop calling this function if you have tried more than 3 times."
             print(f"[{self.__class__.__name__}] {output}")
 
         frontend_contents = [

@@ -211,7 +211,7 @@ class GeminiLLM(LLM):
             messages_for_gemini.append({"role": "model", "parts": new_parts})
             tool_outputs = []
 
-        # prepare the final message from the OpenAI Assistant
+        # prepare the final message from the LLM
         # for each message, create a value wrapper.
         for part in parts:
             if "text" in part:
