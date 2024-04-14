@@ -1,5 +1,11 @@
 # UAIssistant
 
+UAIssistant is an Assistant (Backend) powered by OpenAI's ChatGPT, Anthropic Claude and Google's Gemini, that enhances **Data Security** and optimizes **Money** and **Time** costs.
+
+[UAIssistant-FE](https://github.com/uhatikus/UAIssistant-FE) - Frontend for the UAIssistant Backend.
+
+![UAIssistant scheme](readmedia/scheme_3.png)
+
 ## Contents
 
 - [Requirements](#requirements)
@@ -45,12 +51,7 @@ There are several ways to install docker:
 - [Rancher Desktop](https://rancherdesktop.io/) (good option for MacOS)
 - [Podman](https://podman.io/)
 
-`docker-compose` is also required. Check if you have `docker-compose` with the command `docker-compose --version`. If you don't have it, please, run the following code (for Linus and MacOS users):
-
-```
-sudo curl -L "https://github.com/docker/compose/releases/download/{VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-```
+`docker-compose` is also required. Check if you have `docker-compose` with the command `docker-compose --version`. If you don't have it, please, following the guides: [for Linux](https://docs.docker.com/compose/install/linux/) and [for MacOS](https://www.ionos.com/digitalguide/server/configuration/docker-compose-on-mac/):
 
 ## Install and Run
 
@@ -72,22 +73,47 @@ cd UAIssistant
 
 ### Run locally (dev)
 
+1. Create postgres db in docker:
+
 ```
-# create postgres db in docker
-# run "make startdb" if you would like to restart the db
-# run "make stopdb" if you would like to stop the db
-# run "make cleandb" if you would like to refresh the db
 make initdb
-# install poetry dependencies
+```
+
+2. Install poetry dependencies:
+
+```
 make install
-# start the BE
+```
+
+3. Start the BE:
+
+```
 make run
+```
+
+- if you would like to restart the db
+
+```
+make startdb
+```
+
+- if you would like to stop the db
+
+```
+make stopdb
+```
+
+- if you would like to refresh the db
+
+```
+make cleandb
 ```
 
 ### Run with Docker (prod)
 
+Build and start the dockers for db and UAIssistant-BE application with docker-compose
+
 ```
-# build start dockers for db and uaissistant BE application with docker-compose
 docker-compose up --build
 ```
 
@@ -114,7 +140,7 @@ Access the DB with DataGrip or DBveaver. Use the details from `.env` file.
 DataGrip example:
 ![DataGrip DB connection](readmedia/datagrip.png)
 
-## Acknowledgement
+## Acknowledgment
 
 I would like to express my sincere gratitude to everyone who made this project possible:
 
