@@ -20,6 +20,7 @@ UAIssistant is an Assistant (Backend) powered by OpenAI's ChatGPT, Anthropic Cla
   - [1. Swagger docs](#1-swagger-docs)
   - [2. UAIssistant-FE](#2-uaissistant-fe)
 - [Tool-functions Development](#tool-functions-development)
+- [Add LLM](#add-llm)
 - [DB Access](#db-access)
 - [Acknowledgement](#acknowledgement)
 
@@ -132,6 +133,10 @@ Start [UAIssistant-FE](https://github.com/uhatikus/UAIssistant-FE) and play arou
 ## Tool-functions Development
 
 [Readme "How to develop tool-funtions"](uaissistant/tool_factory/README.md)
+
+## Add LLM
+
+[Readme "How to add LLM"](uaissistant/llms/README.md)
 
 ## DB Access
 
