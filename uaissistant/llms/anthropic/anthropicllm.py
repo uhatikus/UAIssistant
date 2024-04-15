@@ -130,7 +130,6 @@ class AnthropicLLM(LLM):
         }
         messages_for_anthropic.append(user_message_for_anthropic)
 
-        print(messages_for_anthropic)
         # output list
         frontend_outputs: List[AssistantMessageItem] = []
 

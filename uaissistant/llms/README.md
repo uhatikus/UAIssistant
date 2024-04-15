@@ -50,10 +50,12 @@ class LLM(Protocol):
 
 ```
 
-4. Add your llm class to the [LLM module](module.py)
+4. Add you_llm_schema to [tool-function.py](../tool_factory/schemas/tool_function.py) for a proper tool-function calling.
 
-5. Add all created modules to the [main.py](../main.py)
+5. Add your llm class to the [LLM module](module.py)
 
-6. Add required env variablee to the [.env](../../.env) and [.env.example](../../.env) files
+6. Add all created modules to the [main.py](../main.py)
 
-7. Great! After all of these steps you will be able to use your LLM!
+7. Add required env variablee to the [.env](../../.env) and [.env.example](../../.env) files
+
+8. Great! After all of these steps you will be able to use your LLM!

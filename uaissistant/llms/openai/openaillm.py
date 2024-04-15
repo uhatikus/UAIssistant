@@ -306,6 +306,10 @@ class OpenAILLM:
                     f"[{self.__class__.__name__} _get_response] executing function {tool_call.function.name}, with args: {tool_call.function.arguments}"
                 )
 
+                if tool_call.function.name == "multi_tool_use.parallel":
+                    output = "Please, call the tool-functions one by one!"
+                    break
+
                 # parse arguments for tool-function
                 args = {}
                 try:
@@ -348,18 +352,19 @@ class OpenAILLM:
         assistant_message = messages.data[0]
 
         # for each message, create a value wrapper. TODO: Process content.test is None = MessageContentImageFile or other file/json/etc.
-        for content in assistant_message.content:
-            if content.text is not None:
-                assistant_frontent_output = AssistantMessageItem(
-                    id=assistant_message.id,
-                    role=Role.Assistant,
-                    created_at=datetime.now(),
-                    value=AssistantMessageValue(
-                        type=AssistantMessageType.Text,
-                        content={"message": content.text.value},
-                    ),
-                )
-                frontend_outputs.append(assistant_frontent_output)
+        if assistant_message.role == "assistant":
+            for content in assistant_message.content:
+                if content.text is not None:
+                    assistant_frontent_output = AssistantMessageItem(
+                        id=assistant_message.id,
+                        role=Role.Assistant,
+                        created_at=datetime.now(),
+                        value=AssistantMessageValue(
+                            type=AssistantMessageType.Text,
+                            content={"message": content.text.value},
+                        ),
+                    )
+                    frontend_outputs.append(assistant_frontent_output)
 
         return frontend_outputs
 

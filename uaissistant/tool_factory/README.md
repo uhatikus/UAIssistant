@@ -15,7 +15,7 @@ class get_something_useful(ToolFunction):
 
 
         # - DO SOMETHING USEFUL
-        # - you can use tfr: ToolFactoryRepository to access the Databases (Postgres and ClickHouse)
+        # - you can use tfr: ToolFactoryRepository to access the Databases
         # - use `some_arg_from_llm` as `self.some_arg_from_llm`
         # - create plotly fig that can be converted to the json file
 

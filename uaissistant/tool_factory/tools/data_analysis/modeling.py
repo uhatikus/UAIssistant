@@ -93,7 +93,15 @@ class modeling(DataAnalyser):
         #########################################
 
         output = "The user has successfully received the model outputs."
-        frontend_values = []
+        features_string = "; ".join(self.features)
+        frontend_values = [
+            AssistantMessageValue(
+                type=AssistantMessageType.Text,
+                content={
+                    "message": f"Modeling of {self.dataset_name} dataset.\n\nTarget columns is {self.target}.\n\nFeatures are the following:\n\n{features_string}"
+                },
+            )
+        ]
         for fig in fig_outputs:
             fig_json = fig.to_json()
             file_id = f"{self.__class__.__name__}_{str(uuid.uuid4())}"
