@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "uaissistant"
-version = "0.1.0"
+version = "1.0.0"
 description = ""
 authors = ["Ukhatov Alexander <alexander.ukhatov@gmail.com>"]
 license = "LICENSE"
@@ -32,8 +32,6 @@ tabulate = "^0.9.0"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-# [tool.ruff.lint]
-# select = ["ALL"]
 
 [tool.ruff]
 line-length = 80
