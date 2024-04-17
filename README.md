@@ -4,6 +4,8 @@ UAIssistant is an Assistant (Backend) powered by OpenAI's ChatGPT, Anthropic Cla
 
 [UAIssistant-FE](https://github.com/uhatikus/UAIssistant-FE) - Frontend for the UAIssistant Backend.
 
+Check out this [YouTube video](https://www.youtube.com/watch?v=ktFbcTqtOYU) for a demo of the project.
+
 ![UAIssistant scheme](readmedia/scheme_3.png)
 
 ## Contents
