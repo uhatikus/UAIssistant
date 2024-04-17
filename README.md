@@ -104,7 +104,7 @@ make startdb
 make stopdb
 ```
 
-- if you would like to refresh the db
+- if you would like to clean the db
 
 ```
 make cleandb
@@ -112,13 +112,19 @@ make cleandb
 
 ### Run with Docker (prod)
 
-Build and start the dockers for db and UAIssistant-BE application with docker-compose
+Build and start the dockers for db and UAIssistant-BE application with docker-compose:
 
 ```
 docker-compose up --build
 ```
 
-Remove `--build` if you have already built the docker containers.s
+Remove `--build` if you already have built the docker containers.
+
+Remove the created containers:
+
+```
+docker-compose down
+```
 
 ## How to use
 

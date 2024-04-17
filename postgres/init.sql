@@ -5,14 +5,14 @@ CREATE TABLE IF NOT EXISTS assistant (
     instructions TEXT,
     llmsource TEXT,
     model TEXT
-),
+);
 
 CREATE TABLE IF NOT EXISTS assistant_thread (
     id TEXT PRIMARY KEY,
     name TEXT,
     assistant_id TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-),
+);
 
 CREATE TABLE IF NOT EXISTS assistant_message (
     id TEXT PRIMARY KEY,
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS assistant_message (
     role TEXT NOT NULL,
     type TEXT NOT NULL,
     content JSON
-),
+);
 
 CREATE TABLE IF NOT EXISTS iris(
   sepal_l FLOAT,
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS iris(
   petal_l FLOAT,
   petal_w FLOAT,
   class   VARCHAR(20)
-),
+);
 
 INSERT INTO iris (sepal_l, sepal_w, petal_l, petal_w, class)
 VALUES
@@ -186,15 +186,6 @@ VALUES
 (5.9,3.0,5.1,1.8,'Iris-virginica');
 
 
-CREATE TABLE IF NOT EXISTS iris(
-  sepal_l FLOAT,
-  sepal_w FLOAT,
-  petal_l FLOAT,
-  petal_w FLOAT,
-  class   VARCHAR(20)
-),
-
-
 CREATE TABLE IF NOT EXISTS diabetes(
   AGE INT,
   SEX INT,
@@ -207,7 +198,7 @@ CREATE TABLE IF NOT EXISTS diabetes(
   S5 FLOAT,
   S6 FLOAT,
   Y  FLOAT
-),
+);
 
 INSERT INTO diabetes (AGE, SEX, BMI, BP, S1, S2, S3, S4, S5, S6, Y)
 VALUES
